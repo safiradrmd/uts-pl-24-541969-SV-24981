@@ -19,17 +19,16 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, pdo, pdo_sqlite, bcmath
 
-      - name: Copy .env file for Testing
-        run: |
-          cd backend
-          cp .env.example .env || touch .env
-          echo "APP_KEY=" >> .env
-          php artisan key:generate --force
-
       - name: Install Backend Dependencies
         run: |
           cd backend
           composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Setup .env and Generate App Key
+        run: |
+          cd backend
+          cp .env.example .env || touch .env
+          php artisan key:generate --force
 
       - name: Run Backend Tests
         run: |
@@ -45,7 +44,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install & Build Frontend
         run: |
