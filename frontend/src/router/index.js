@@ -18,16 +18,21 @@ const router = createRouter({
   ],
 })
 
-// Navigation Guard menggunakan Return Value (Standard Vue Router 4)
-router.beforeEach((to) => {
-  const token = localStorage.getItem('auth_token')
+router.beforeEach((to, from) => {
+  let token = localStorage.getItem('auth_token')
 
-  // Jika mencoba akses selain login tanpa token -> redirect ke login
+  // Bersihkan token invalid yang mungkin tersimpan dari versi login sebelumnya.
+  if (token === 'undefined' || token === 'null') {
+    localStorage.removeItem('auth_token')
+    token = null
+  }
+
+  // Jika belum login dan ingin ke halaman terproteksi -> lempar ke login
   if (to.name !== 'login' && !token) {
     return { name: 'login' }
   }
 
-  // Jika sudah punya token tapi mencoba akses login -> redirect ke products
+  // Jika sudah login dan ingin ke halaman login -> lempar ke products
   if (to.name === 'login' && token) {
     return { name: 'products' }
   }

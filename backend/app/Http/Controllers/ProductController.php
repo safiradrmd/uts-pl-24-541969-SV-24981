@@ -23,8 +23,8 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name'  => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -76,8 +76,8 @@ class ProductController extends Controller
 
     $validator = Validator::make($request->all(), [
         'name'  => 'sometimes|required|string|max:255',
-        'price' => 'sometimes|required|numeric',
-        'stock' => 'sometimes|required|integer',
+        'price' => 'sometimes|required|numeric|min:0',
+        'stock' => 'sometimes|required|integer|min:0',
     ]);
 
     if ($validator->fails()) {
