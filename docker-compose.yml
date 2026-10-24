@@ -1,0 +1,72 @@
+services:
+  # Service 1: Database MySQL (Soal 6a)
+  db:
+    image: mysql:8.0
+    container_name: pos_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_PASSWORD:-secret}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - db_network
+
+
+# Service 2: Backend Laravel (FrankenPHP)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pos_backend
+    restart: always
+    environment:
+      APP_ENV: local
+      APP_KEY: base64:v5y3m8B1K9xN8w4F9/Z4G1w6m3d8y2m1K9xN8w4F9/Z=
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: laravel
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+    volumes:
+      - ./backend:/var/www
+    ports:
+      - "8000:8080" # Akses API backend langsung via port 8000 jika diperlukan
+    depends_on:
+      - db
+    networks:
+      - pos_network
+
+  # Service 3: Frontend Vue (Soal 6a & 6b)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pos_frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - pos_network
+
+# Named Volume untuk DB Data (Soal 6d)
+volumes:
+  dbdata:
+    driver: local
+
+# Network khusus antar container (Soal 6b)
+networks:
+  pos_network:
+    driver: bridge
+  db_network:
+    driver: bridge
+    internal: true
