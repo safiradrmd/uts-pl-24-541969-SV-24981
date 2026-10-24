@@ -1,21 +1,6 @@
-<template>
+﻿<template>
   <main class="pos-page">
-    <header class="pos-topbar">
-      <div class="topbar-inner">
-        <RouterLink class="brand" to="/products" aria-label="StokKasir">
-          <span class="brand-mark">S</span><span class="brand-name">STOK<span>KASIR</span></span>
-        </RouterLink>
-        <nav class="main-nav" aria-label="Navigasi utama">
-          <span class="nav-item active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z"/></svg>Kasir</span>
-        </nav>
-        <div class="topbar-right">
-          <span class="workspace-label"><i></i>Toko saya</span>
-          <button class="manage-button" type="button" @click="openProductManager"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Kelola produk</span></button>
-          <span class="topbar-divider"></span>
-          <button class="logout-button" type="button" @click="handleLogout" title="Keluar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg><span>Keluar</span></button>
-        </div>
-      </div>
-    </header>
+    <PosHeader :show-product-manager="true" @manage-products="openProductManager" />
 
     <div class="pos-content">
       <section class="page-heading">
@@ -46,7 +31,7 @@
           <div v-if="cart.length" class="cart-items">
             <article v-for="item in cart" :key="item.id" class="cart-item">
               <div class="cart-item-main"><span class="cart-item-avatar">{{ item.name?.charAt(0)?.toUpperCase() || 'P' }}</span><div class="cart-item-info"><b>{{ item.name }}</b><small>{{ formatCurrency(item.price) }}</small></div><button class="remove-item" type="button" :aria-label="`Hapus ${item.name} dari keranjang`" @click="removeFromCart(item.id)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-              <div class="cart-item-bottom"><span class="quantity-control"><button type="button" :aria-label="`Kurangi jumlah ${item.name}`" @click="changeQuantity(item.id, -1)">−</button><b>{{ item.quantity }}</b><button type="button" :disabled="item.quantity >= item.stock" :aria-label="`Tambah jumlah ${item.name}`" @click="changeQuantity(item.id, 1)">+</button></span><b class="line-total">{{ formatCurrency(item.price * item.quantity) }}</b></div>
+              <div class="cart-item-bottom"><span class="quantity-control"><button type="button" :aria-label="`Kurangi jumlah ${item.name}`" @click="changeQuantity(item.id, -1)">âˆ’</button><b>{{ item.quantity }}</b><button type="button" :disabled="item.quantity >= item.stock" :aria-label="`Tambah jumlah ${item.name}`" @click="changeQuantity(item.id, 1)">+</button></span><b class="line-total">{{ formatCurrency(item.price * item.quantity) }}</b></div>
             </article>
           </div>
           <div v-else class="cart-empty"><div class="cart-empty-art"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 1.9-1.4L22 9H6"/><circle cx="10" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg></div><b>Keranjang masih kosong</b><p>Pilih produk di sebelah kiri untuk memulai transaksi.</p></div>
@@ -76,7 +61,7 @@
             <div class="manager-toolbar"><p>Kelola harga dan stok produk tokomu.</p><button class="primary-button add-product-button" type="button" @click="startCreateProduct"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Produk baru</button></div>
             <div class="manager-product-list">
               <div v-if="!products.length" class="manager-empty">Belum ada produk. Tambahkan produk pertama untuk mulai berjualan.</div>
-              <article v-for="product in products" :key="product.id" class="manager-product-row"><span class="manager-product-avatar">{{ product.name?.charAt(0)?.toUpperCase() || 'P' }}</span><span class="manager-product-info"><b>{{ product.name }}</b><small>{{ formatCurrency(product.price) }} <i>•</i> Stok {{ product.stock }}</small></span><button class="manager-edit" type="button" @click="startEditProduct(product)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/></svg><span>Edit</span></button><button class="manager-delete" type="button" :aria-label="`Hapus ${product.name}`" @click="deleteProduct(product)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 14h11l1-14M9 7V4h6v3"/></svg></button></article>
+              <article v-for="product in products" :key="product.id" class="manager-product-row"><span class="manager-product-avatar">{{ product.name?.charAt(0)?.toUpperCase() || 'P' }}</span><span class="manager-product-info"><b>{{ product.name }}</b><small>{{ formatCurrency(product.price) }} <i>â€¢</i> Stok {{ product.stock }}</small></span><button class="manager-edit" type="button" @click="startEditProduct(product)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/></svg><span>Edit</span></button><button class="manager-delete" type="button" :aria-label="`Hapus ${product.name}`" @click="deleteProduct(product)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 14h11l1-14M9 7V4h6v3"/></svg></button></article>
             </div>
             <footer class="manager-footer"><span>{{ products.length }} produk terdaftar</span><button class="secondary-button" type="button" @click="closeProductManager">Selesai</button></footer>
           </template>
@@ -99,11 +84,12 @@
       <div v-if="completedSale" class="modal-backdrop" @click.self="completedSale = null">
         <section class="receipt-modal" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
           <div class="receipt-success"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></div><p class="modal-kicker">TRANSAKSI BERHASIL</p><h2 id="receipt-title">Terima kasih!</h2><p class="receipt-reference">{{ completedSale.reference }}</p>
-          <div class="receipt-items"><div v-for="item in completedSale.items" :key="item.id"><span>{{ item.product_name }} <small>× {{ item.quantity }}</small></span><b>{{ formatCurrency(item.subtotal) }}</b></div></div>
+          <div class="receipt-items"><div v-for="item in completedSale.items" :key="item.id"><span>{{ item.product_name }} <small>Ã— {{ item.quantity }}</small></span><b>{{ formatCurrency(item.subtotal) }}</b></div></div>
           <div class="receipt-line"><span>Total</span><b>{{ formatCurrency(completedSale.subtotal) }}</b></div><div class="receipt-line"><span>Tunai diterima</span><b>{{ formatCurrency(completedSale.cash_received) }}</b></div><div class="receipt-change"><span>Kembalian</span><b>{{ formatCurrency(completedSale.change_due) }}</b></div>
           <button class="primary-button receipt-done" type="button" @click="completedSale = null">Selesai</button>
         </section>
       </div>
+
     </Teleport>
   </main>
 </template>
@@ -112,6 +98,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
+import PosHeader from '../components/PosHeader.vue'
 
 const products = ref([])
 const cart = ref([])
@@ -250,7 +237,7 @@ const saveProduct = async () => {
 }
 
 const deleteProduct = async (product) => {
-  if (!window.confirm(`Hapus produk “${product.name}” dari katalog?`)) return
+  if (!window.confirm(`Hapus produk â€œ${product.name}â€ dari katalog?`)) return
   try {
     await api.delete(`/products/${product.id}`)
     await fetchProducts()
@@ -295,17 +282,6 @@ const submitSale = async () => {
   }
 }
 
-const handleLogout = async () => {
-  try {
-    await api.post('/logout')
-  } catch (error) {
-    // Abaikan jika token sudah kedaluwarsa.
-  } finally {
-    localStorage.removeItem('auth_token')
-    router.push('/')
-  }
-}
-
 const handleEscape = (event) => {
   if (event.key !== 'Escape') return
   if (showProductManager.value) closeProductManager()
@@ -333,4 +309,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleEscape))
 @media (max-width: 680px) { .pos-topbar { height: 58px; }.topbar-inner, .pos-content { width: calc(100% - 28px); }.brand-mark { width: 29px; height: 29px; font-size: 18px; }.brand-name { font-size: 10px; }.main-nav { margin-left: 13px; }.nav-item { gap: 5px; padding: 0 8px; font-size: 9px; }.nav-item svg { width: 13px; height: 13px; }.topbar-right { gap: 6px; }.workspace-label, .topbar-divider, .logout-button span { display: none; }.manage-button { width: 31px; height: 31px; justify-content: center; padding: 0; }.manage-button span { display: none; }.logout-button { padding: 7px; }.page-heading { padding: 22px 0 16px; }.page-heading h1 { font-size: 27px; }.heading-description { max-width: 285px; font-size: 9px; line-height: 1.6; }.shift-status { gap: 7px; padding: 6px 8px; }.status-icon { width: 27px; height: 27px; }.shift-status small { font-size: 6px; }.shift-status b { font-size: 8px; }.pos-layout { grid-template-columns: 1fr; }.catalog-panel { min-height: 360px; padding: 15px 13px 0; }.product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }.product-card { min-height: 143px; }.catalog-hint { display: none; }.category-row { min-height: 47px; }.cart-panel { position: static; min-height: 410px; max-height: none; }.cart-items { max-height: 280px; }.cart-empty { min-height: 165px; }.pos-footer { margin-top: 13px; }.pos-footer span:nth-child(2) { display: none; }.modal-backdrop { align-items: end; padding: 10px; }.manager-modal, .payment-modal, .receipt-modal { max-height: calc(100dvh - 20px); overflow-y: auto; border-radius: 13px 13px 9px 9px; }.manager-product-list { max-height: 43vh; }.receipt-modal { margin: auto 0; }.payment-total b { font-size: 26px; } }
 @media (max-width: 380px) { .shift-status { display: none; }.product-card { padding: 9px; }.product-card-name { font-size: 9px; }.product-card-price { font-size: 10px; }.form-fields-row { grid-template-columns: 1fr; gap: 12px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+.nav-item { border: 0; background: transparent; font-family: inherit; cursor: pointer; }
 </style>

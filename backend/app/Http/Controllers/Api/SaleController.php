@@ -13,6 +13,32 @@ use Illuminate\Validation\ValidationException;
 
 class SaleController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        $sales = Sale::query()
+            ->with('items')
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('reference', 'like', "%{$search}%")
+                        ->orWhereHas('items', fn ($items) => $items->where('product_name', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['date'] ?? null, fn ($query, $date) => $query->whereDate('created_at', $date))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $sales,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
