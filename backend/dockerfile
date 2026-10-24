@@ -1,18 +1,31 @@
-FROM php:8.2-fpm-alpine
+FROM dunglas/frankenphp:latest-php8.2
 
-RUN apk add --no-cache zip unzip curl libpng-dev libxml2-dev
+# Set working directory
+WORKDIR /app
 
-RUN docker-php-ext-install pdo pdo_mysql bcmath gd
+# Install dependensi sistem dan ekstensi PHP untuk MySQL
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    && docker-php-ext-install pdo_mysql mbstring exify pcntl bcmath gd
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Copy composer dari official image
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
+# Copy seluruh kode aplikasi backend
+COPY . /app
 
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+# Install dependensi Laravel via Composer
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-COPY . .
-RUN composer dump-autoload --optimize
+# Set hak akses folder storage dan cache Laravel
+RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-EXPOSE 9000
-CMD ["php-fpm"]
+# Expose port HTTP FrankenPHP (8080 internal)
+EXPOSE 8080
+
+# Jalankan FrankenPHP menunjuk ke folder public Laravel
+CMD ["frankenphp", "php-server", "--listen", ":8080", "--root", "public/"]
