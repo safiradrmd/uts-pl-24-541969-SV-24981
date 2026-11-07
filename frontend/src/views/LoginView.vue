@@ -92,7 +92,14 @@ const handleLogin = async () => {
     localStorage.setItem('auth_token', response.data.access_token)
     router.push('/products')
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Login gagal, periksa email dan password.'
+    console.error('Login error detail:', error)
+    if (error.response?.data?.message) {
+      errorMessage.value = error.response.data.message
+    } else if (error.message) {
+      errorMessage.value = `${error.message}: Cek koneksi backend port 8000`
+    } else {
+      errorMessage.value = 'Login gagal, periksa email dan password.'
+    }
   } finally {
     isLoading.value = false
   }

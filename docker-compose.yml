@@ -1,5 +1,5 @@
 services:
-  # Service 1: Database MySQL (Soal 6a)
+  # Service 1: Database MySQL 
   db:
     image: mysql:8.0
     container_name: pos_db
@@ -9,18 +9,28 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
       MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
       MYSQL_USER: ${DB_USERNAME:-laravel}
+    ports:
+      - "3307:3306"
     volumes:
       - dbdata:/var/lib/mysql
+    networks:
+      - pos_network
+      - db_network
+    # Healthcheck Database
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_PASSWORD:-secret}"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 20
-    networks:
-      - db_network
+      retries: 3
+      start_period: 10s
+    # Rotasi Log
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-
-# Service 2: Backend Laravel (FrankenPHP)
+  # Service 2: Backend Laravel (FrankenPHP) (Soal 4 & 6)
   backend:
     build:
       context: ./backend
@@ -30,6 +40,9 @@ services:
     environment:
       APP_ENV: local
       APP_KEY: base64:v5y3m8B1K9xN8w4F9/Z4G1w6m3d8y2m1K9xN8w4F9/Z=
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: mysql
+    
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: laravel
@@ -38,13 +51,27 @@ services:
     volumes:
       - ./backend:/var/www
     ports:
-      - "8000:8080" # Akses API backend langsung via port 8000 jika diperlukan
+      - "8000:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - pos_network
+    # Healthcheck Backend ke endpoint /api/health
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    # Rotasi Log
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # Service 3: Frontend Vue (Soal 6a & 6b)
+  # Service 3: Frontend Vue (Soal 6)
   frontend:
     build:
       context: ./frontend
@@ -57,13 +84,19 @@ services:
       - backend
     networks:
       - pos_network
+    # Rotasi Log
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-# Named Volume untuk DB Data (Soal 6d)
+# Named Volume untuk DB Data
 volumes:
   dbdata:
     driver: local
 
-# Network khusus antar container (Soal 6b)
+# Network khusus antar container
 networks:
   pos_network:
     driver: bridge
