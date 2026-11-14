@@ -1,0 +1,11 @@
+groups:
+  - name: monitoring_alerts
+    rules:
+      - alert: LayananMonitoringMati
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Layanan {{ $labels.job }} ({{ $labels.instance }}) mati!"
+          description: "Target tidak merespons selama lebih dari 30 detik. TINDAKAN PERTAMA: Jalankan 'docker compose ps' untuk memeriksa status container dan cek log error terakhir dengan 'docker compose logs {{ $labels.job }} --tail=50'."
